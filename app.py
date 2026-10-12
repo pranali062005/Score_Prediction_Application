@@ -10,7 +10,7 @@ st.set_page_config(page_title="Student Performance Predictor", page_icon="📊",
 # Load the KNeighborsRegressor model with safety check for the file path
 @st.cache_resource
 def load_model():
-    model_path = 'kn.pkl'
+    model_path = 'knn.pkl'
     if not os.path.exists(model_path):
         # Look in the same directory or check alternate filenames if needed
         raise FileNotFoundError(f"The model file '{model_path}' was not found in the app directory. Please make sure 'kn.pkl' is uploaded to your GitHub repository.")
