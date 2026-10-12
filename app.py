@@ -2,17 +2,26 @@ import streamlit as st
 import pickle
 import numpy as np
 import pandas as pd
-
-# Load the KNeighborsRegressor model from source[cite: 1]
-@st.cache_resource
-def load_model():
-    with open('kn.pkl', 'rb') as f:
-        return pickle.load(f)
-
-model = load_model()
+import os
 
 # Page configuration
 st.set_page_config(page_title="Student Performance Predictor", page_icon="📊", layout="centered")
+
+# Load the KNeighborsRegressor model with safety check for the file path
+@st.cache_resource
+def load_model():
+    model_path = 'kn.pkl'
+    if not os.path.exists(model_path):
+        # Look in the same directory or check alternate filenames if needed
+        raise FileNotFoundError(f"The model file '{model_path}' was not found in the app directory. Please make sure 'kn.pkl' is uploaded to your GitHub repository.")
+    with open(model_path, 'rb') as f:
+        return pickle.load(f)
+
+try:
+    model = load_model()
+except Exception as e:
+    st.error(f"Error loading model: {e}")
+    model = None
 
 # Custom CSS for shadow and card layout
 st.markdown("""
@@ -31,7 +40,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("📊 Student Performance Predictor")
-st.write("Enter the student details below to generate predictions using the deployed K-Nearest Neighbors model[cite: 1].")
+st.write("Enter the student details below to generate predictions using the K-Nearest Neighbors model[cite: 1].")
 
 with st.form("prediction_form"):
     st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -57,5 +66,7 @@ with st.form("prediction_form"):
     submit_val = st.form_submit_button("Predict Result")
 
 if submit_val:
-    # Note: Ensure categorical inputs are encoded correctly if your training pipeline used LabelEncoder or OneHotEncoder.
-    st.info("Form submitted successfully. Pass your processed input array to `model.predict()` to obtain the final score.")
+    if model is None:
+        st.error("Model is not loaded properly. Please fix the missing 'kn.pkl' file issue.")
+    else:
+        st.info("Form submitted successfully. Ensure your inputs match the encoding format expected by your trained model before calling model.predict().")
